@@ -1,74 +1,95 @@
 using System;
 using System.Collections.Generic;
 
-public class JournalProgram
+namespace JournalApp
 {
-    static void Main()
+    public class JournalProgram
     {
-        Journal journal = new Journal();
-        Random random = new Random();
-        List<string> prompts = new List<string>
+        private List<Entry> entries = new List<Entry>();
+        private List<string> prompts = new List<string>
         {
-            "What was one thing that you did that you loved?",
+            "Who was the most interesting person I interacted with today?",
             "What was the best part of my day?",
             "How did I see the hand of the Lord in my life today?",
             "What was the strongest emotion I felt today?",
-            "What did you do today that you were proud about?"
+            "If I had one thing I could do over today, what would it be?"
         };
 
-        while (true)
+        public static void Main()
         {
-            Console.WriteLine("\nJournal Program");
-            Console.WriteLine("1. Write a new entry");
-            Console.WriteLine("2. Display the journal");
-            Console.WriteLine("3. Save the journal to a file");
-            Console.WriteLine("4. Load the journal from a file");
-            Console.WriteLine("5. Exit");
-            Console.Write("Select an option: ");
-            int option;
+            JournalProgram program = new JournalProgram();
+            program.Run();
+        }
 
-            if (int.TryParse(Console.ReadLine(), out option))
+        public void Run()
+        {
+            bool keepRunning = true;
+            while (keepRunning)
             {
-                switch (option)
+                Console.Clear();
+                ShowMenu();
+                string choice = Console.ReadLine();
+
+                switch (choice)
                 {
-                    case 1:
-                        string prompt = prompts[random.Next(prompts.Count)];
-                        Console.WriteLine($"Prompt: {prompt}");
-                        Console.Write("Your response: ");
-                        string response = Console.ReadLine();
-                        string date = DateTime.Now.ToString("yyyy-MM-dd");
-                        journal.AddEntry(prompt, response, date);
+                    case "1":
+                        WriteNewEntry();
                         break;
-
-                    case 2:
-                        journal.DisplayEntries();
+                    case "2":
+                        DisplayJournal();
                         break;
-
-                    case 3:
-                        Console.Write("Enter filename to save: ");
-                        string saveFile = Console.ReadLine();
-                        journal.SaveToFile(saveFile);
+                    case "3":
+                        keepRunning = false;
                         break;
-
-                    case 4:
-                        Console.Write("Enter filename to load: ");
-                        string loadFile = Console.ReadLine();
-                        journal.LoadFromFile(loadFile);
-                        break;
-
-                    case 5:
-                        Console.WriteLine("Goodbye!");
-                        return;
-
                     default:
                         Console.WriteLine("Invalid option. Please try again.");
                         break;
                 }
             }
+        }
+
+        private void ShowMenu()
+        {
+            Console.WriteLine("Journal Program");
+            Console.WriteLine("1. Write a New Entry");
+            Console.WriteLine("2. Display Journal");
+            Console.WriteLine("3. Exit");
+            Console.Write("Choose an option: ");
+        }
+
+        private void WriteNewEntry()
+        {
+            Random random = new Random();
+            string prompt = prompts[random.Next(prompts.Count)];
+            Console.WriteLine("Today's prompt: " + prompt);
+            Console.Write("Your response: ");
+            string response = Console.ReadLine();
+            string date = DateTime.Now.ToString("yyyy-MM-dd");
+
+            entries.Add(new Entry(date, prompt, response));
+            Console.WriteLine("Entry saved.");
+            Console.ReadLine();
+        }
+
+        private void DisplayJournal()
+        {
+            Console.Clear();
+            if (entries.Count == 0)
+            {
+                Console.WriteLine("Your journal is empty.");
+            }
             else
             {
-                Console.WriteLine("Please enter a valid number.");
+                foreach (var entry in entries)
+                {
+                    Console.WriteLine($"Date: {entry.Date}");
+                    Console.WriteLine($"Prompt: {entry.Prompt}");
+                    Console.WriteLine($"Response: {entry.Response}");
+                    Console.WriteLine();
+                }
             }
+            Console.WriteLine("Press Enter to return to the menu.");
+            Console.ReadLine();
         }
     }
 }
