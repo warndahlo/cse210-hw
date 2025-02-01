@@ -1,64 +1,88 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
 
 public class Journal
 {
-    public List<Entry> Entries { get; private set; } = new List<Entry>();
-
-    public void AddEntry(string prompt, string response, string date)
+    private List<Entry> entries = new List<Entry>();
+    private List<string> prompts = new List<string>
     {
-        Entries.Add(new Entry(date, prompt, response));
+        "Who was the most interesting person I interacted with today?",
+        "What was the best part of my day?",
+        "How did I see the hand of the Lord in my life today?",
+        "What was the strongest emotion I felt today?",
+        "If I had one thing I could do over today, what would it be?"
+    };
+
+    public void AddEntry()
+    {
+        Random rand = new Random();
+        string prompt = prompts[rand.Next(prompts.Count)];
+
+        Console.WriteLine(prompt);
+        Console.Write("> ");
+        string response = Console.ReadLine();
+
+        int mood;
+        do
+        {
+            Console.Write("Rate your mood (1-5): ");
+        } while (!int.TryParse(Console.ReadLine(), out mood) || mood < 1 || mood > 5);
+
+        Entry newEntry = new Entry(prompt, response, mood);
+        entries.Add(newEntry);
     }
 
     public void DisplayEntries()
     {
-        if (Entries.Count == 0)
+        if (entries.Count == 0)
         {
-            Console.WriteLine("No entries in the journal.");
+            Console.WriteLine("No entries yet.");
+            return;
+        }
+
+        foreach (var entry in entries)
+        {
+            entry.DisplayEntry();
+        }
+    }
+
+    public void SearchEntries()
+    {
+        Console.Write("Enter keyword to search: ");
+        string keyword = Console.ReadLine().ToLower();
+
+        var foundEntries = entries.FindAll(e => e.Response.ToLower().Contains(keyword) || e.Prompt.ToLower().Contains(keyword));
+
+        if (foundEntries.Count == 0)
+        {
+            Console.WriteLine("No matching entries found.");
         }
         else
         {
-            foreach (var entry in Entries)
+            Console.WriteLine($"Found {foundEntries.Count} entries:\n");
+            foreach (var entry in foundEntries)
             {
-                Console.WriteLine(entry);
+                entry.DisplayEntry();
             }
         }
     }
 
-    public void SaveToFile(string filename)
+    public void ExportToTxt(string filename)
     {
-        try
+        using (StreamWriter writer = new StreamWriter(filename))
         {
-            var json = JsonSerializer.Serialize(Entries);
-            File.WriteAllText(filename, json);
-            Console.WriteLine("Journal saved successfully.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error saving file: {ex.Message}");
-        }
-    }
+            writer.WriteLine("My Journal Entries");
+            writer.WriteLine("===================\n");
 
-    public void LoadFromFile(string filename)
-    {
-        if (File.Exists(filename))
-        {
-            try
+            foreach (var entry in entries)
             {
-                var json = File.ReadAllText(filename);
-                Entries = JsonSerializer.Deserialize<List<Entry>>(json) ?? new List<Entry>();
-                Console.WriteLine("Journal loaded successfully.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading file: {ex.Message}");
+                writer.WriteLine($"[{entry.Date}] - Mood: {entry.Mood}/5");
+                writer.WriteLine($"Prompt: {entry.Prompt}");
+                writer.WriteLine($"→ {entry.Response}\n");
+                writer.WriteLine("---------------------------\n");
             }
         }
-        else
-        {
-            Console.WriteLine("File not found.");
-        }
+        Console.WriteLine("Journal exported to text file successfully.");
     }
 }
