@@ -132,7 +132,7 @@ class Scripture
 
 /*
     --- Extra Features Added ---
-    1. Added multiple scriptures from LDS sources (Proverbs, 2 Nephi, Alma, Moses, D&C)
+    1. Added multiple scriptures
     2. Implemented difficulty levels:
        - Easy: Hides 1 word per round
        - Medium: Hides 3 words per round
