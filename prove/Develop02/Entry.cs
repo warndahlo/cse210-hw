@@ -2,23 +2,38 @@ using System;
 
 public class Entry
 {
-    public string Date { get; set; }
-    public string Prompt { get; set; }
-    public string Response { get; set; }
-    public int Mood { get; set; } // Mood rating (1-5)
+    private string _date;
+    private string _prompt;
+    private string _response;
+    private int _mood;
 
     public Entry(string prompt, string response, int mood)
     {
-        Date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-        Prompt = prompt;
-        Response = response;
-        Mood = mood;
+        _date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        _prompt = prompt;
+        _response = response;
+        _mood = mood;
+    }
+
+    public string GetFormattedEntry()
+    {
+        return $"{_date}|{_mood}|{_prompt}|{_response}";
+    }
+
+    public static Entry FromFormattedEntry(string line)
+    {
+        string[] parts = line.Split('|');
+        if (parts.Length == 4)
+        {
+            return new Entry(parts[2], parts[3], int.Parse(parts[1]));
+        }
+        return null;
     }
 
     public void DisplayEntry()
     {
-        Console.WriteLine($"[{Date}] - Mood: {Mood}/5");
-        Console.WriteLine($"Prompt: {Prompt}");
-        Console.WriteLine($"→ {Response}\n");
+        Console.WriteLine($"[{_date}] - Mood: {_mood}/5");
+        Console.WriteLine($"Prompt: {_prompt}");
+        Console.WriteLine($"→ {_response}\n");
     }
 }

@@ -4,8 +4,8 @@ using System.IO;
 
 public class Journal
 {
-    private List<Entry> entries = new List<Entry>();
-    private List<string> prompts = new List<string>
+    private List<Entry> _entries = new List<Entry>();
+    private List<string> _prompts = new List<string>
     {
         "Who was the most interesting person I interacted with today?",
         "What was the best part of my day?",
@@ -17,7 +17,7 @@ public class Journal
     public void AddEntry()
     {
         Random rand = new Random();
-        string prompt = prompts[rand.Next(prompts.Count)];
+        string prompt = _prompts[rand.Next(_prompts.Count)];
 
         Console.WriteLine(prompt);
         Console.Write("> ");
@@ -30,18 +30,18 @@ public class Journal
         } while (!int.TryParse(Console.ReadLine(), out mood) || mood < 1 || mood > 5);
 
         Entry newEntry = new Entry(prompt, response, mood);
-        entries.Add(newEntry);
+        _entries.Add(newEntry);
     }
 
     public void DisplayEntries()
     {
-        if (entries.Count == 0)
+        if (_entries.Count == 0)
         {
             Console.WriteLine("No entries yet.");
             return;
         }
 
-        foreach (var entry in entries)
+        foreach (var entry in _entries)
         {
             entry.DisplayEntry();
         }
@@ -52,7 +52,7 @@ public class Journal
         Console.Write("Enter keyword to search: ");
         string keyword = Console.ReadLine().ToLower();
 
-        var foundEntries = entries.FindAll(e => e.Response.ToLower().Contains(keyword) || e.Prompt.ToLower().Contains(keyword));
+        var foundEntries = _entries.FindAll(e => e.GetFormattedEntry().ToLower().Contains(keyword));
 
         if (foundEntries.Count == 0)
         {
@@ -68,21 +68,39 @@ public class Journal
         }
     }
 
-    public void ExportToTxt(string filename)
+    public void SaveToFile(string filename)
     {
         using (StreamWriter writer = new StreamWriter(filename))
         {
-            writer.WriteLine("My Journal Entries");
-            writer.WriteLine("===================\n");
-
-            foreach (var entry in entries)
+            foreach (var entry in _entries)
             {
-                writer.WriteLine($"[{entry.Date}] - Mood: {entry.Mood}/5");
-                writer.WriteLine($"Prompt: {entry.Prompt}");
-                writer.WriteLine($"→ {entry.Response}\n");
-                writer.WriteLine("---------------------------\n");
+                writer.WriteLine(entry.GetFormattedEntry());
             }
         }
-        Console.WriteLine("Journal exported to text file successfully.");
+        Console.WriteLine("Journal saved successfully.");
+    }
+
+    public void LoadFromFile(string filename)
+    {
+        if (!File.Exists(filename))
+        {
+            Console.WriteLine("File not found. No entries loaded.");
+            return;
+        }
+
+        _entries.Clear();
+        using (StreamReader reader = new StreamReader(filename))
+        {
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                Entry entry = Entry.FromFormattedEntry(line);
+                if (entry != null)
+                {
+                    _entries.Add(entry);
+                }
+            }
+        }
+        Console.WriteLine("Journal loaded successfully.");
     }
 }
