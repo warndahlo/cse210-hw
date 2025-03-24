@@ -1,105 +1,78 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
-public class Activity
+abstract class Activity
 {
-    private DateTime _date;
-    private int _durationMinutes;
+    protected string Date;
+    protected int Duration; // Minutes
 
-    public Activity(DateTime date, int durationMinutes)
+    public Activity(string date, int duration)
     {
-        _date = date;
-        _durationMinutes = durationMinutes;
+        Date = date;
+        Duration = duration;
     }
 
-    public DateTime Date => _date;
-    public int DurationMinutes => _durationMinutes;
-
-    public virtual double GetDistance() => 0;
-    public virtual double GetSpeed() => 0;
-    public virtual double GetPace() => 0;
+    public abstract double GetDistance();
+    public abstract double GetSpeed();
+    public abstract double GetPace();
 
     public virtual string GetSummary()
     {
-        string formattedDate = _date.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);
-        return $"{formattedDate} Activity ({_durationMinutes} min)";
+        return $"{Date} {this.GetType().Name} ({Duration} min): Distance {GetDistance():F2} km, Speed {GetSpeed():F2} kph, Pace {GetPace():F2} min per km";
     }
 }
 
-public class Running : Activity
+class Running : Activity
 {
-    private double _distanceMiles;
+    private double Distance;
 
-    public Running(DateTime date, int durationMinutes, double distanceMiles) 
-        : base(date, durationMinutes)
+    public Running(string date, int duration, double distance) : base(date, duration)
     {
-        _distanceMiles = distanceMiles;
+        Distance = distance;
     }
 
-    public override double GetDistance() => _distanceMiles;
-    public override double GetSpeed() => (GetDistance() / DurationMinutes) * 60;
-    public override double GetPace() => DurationMinutes / GetDistance();
-
-    public override string GetSummary()
-    {
-        string formattedDate = Date.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);
-        return $"{formattedDate} Running ({DurationMinutes} min) - Distance: {GetDistance():F1} miles, Speed: {GetSpeed():F1} mph, Pace: {GetPace():F1} min per mile";
-    }
+    public override double GetDistance() => Distance;
+    public override double GetSpeed() => (Distance / Duration) * 60;
+    public override double GetPace() => Duration / Distance;
 }
 
-public class Cycling : Activity
+class Cycling : Activity
 {
-    private double _speedMph;
+    private double Speed;
 
-    public Cycling(DateTime date, int durationMinutes, double speedMph) 
-        : base(date, durationMinutes)
+    public Cycling(string date, int duration, double speed) : base(date, duration)
     {
-        _speedMph = speedMph;
+        Speed = speed;
     }
 
-    public override double GetDistance() => (_speedMph * DurationMinutes) / 60;
-    public override double GetSpeed() => _speedMph;
-    public override double GetPace() => 60 / _speedMph;
-
-    public override string GetSummary()
-    {
-        string formattedDate = Date.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);
-        return $"{formattedDate} Cycling ({DurationMinutes} min) - Distance: {GetDistance():F1} miles, Speed: {GetSpeed():F1} mph, Pace: {GetPace():F1} min per mile";
-    }
+    public override double GetDistance() => (Speed * Duration) / 60;
+    public override double GetSpeed() => Speed;
+    public override double GetPace() => 60 / Speed;
 }
 
-public class Swimming : Activity
+class Swimming : Activity
 {
-    private int _laps;
-    private const double LapLengthMiles = 50.0 / 1000.0 * 0.62; // 50 meters converted to miles
+    private int Laps;
 
-    public Swimming(DateTime date, int durationMinutes, int laps) 
-        : base(date, durationMinutes)
+    public Swimming(string date, int duration, int laps) : base(date, duration)
     {
-        _laps = laps;
+        Laps = laps;
     }
 
-    public override double GetDistance() => _laps * LapLengthMiles;
-    public override double GetSpeed() => (GetDistance() / DurationMinutes) * 60;
-    public override double GetPace() => DurationMinutes / GetDistance();
-
-    public override string GetSummary()
-    {
-        string formattedDate = Date.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);
-        return $"{formattedDate} Swimming ({DurationMinutes} min) - Distance: {GetDistance():F1} miles, Speed: {GetSpeed():F1} mph, Pace: {GetPace():F1} min per mile";
-    }
+    public override double GetDistance() => (Laps * 50) / 1000.0;
+    public override double GetSpeed() => (GetDistance() / Duration) * 60;
+    public override double GetPace() => Duration / GetDistance();
 }
 
-public class Program
+class Program
 {
-    public static void Main(string[] args)
+    static void Main()
     {
         List<Activity> activities = new List<Activity>
         {
-            new Running(new DateTime(2022, 11, 3), 30, 3.0),
-            new Cycling(new DateTime(2022, 11, 4), 45, 15.0),
-            new Swimming(new DateTime(2022, 11, 5), 20, 40)
+            new Running("03 Nov 2022", 30, 4.8),
+            new Cycling("03 Nov 2022", 30, 20),
+            new Swimming("03 Nov 2022", 30, 20)
         };
 
         foreach (var activity in activities)
